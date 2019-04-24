@@ -1,8 +1,8 @@
-#Python Showtime Scrapper
+# Python Showtime Scrapper
 
 A Safari bot that will fetch you the best seats available for all the nearby theaters.
 
-##How to Set up
+## How to Set up
 
 Create a virtual environment
 ```bash
@@ -25,7 +25,7 @@ Enable safaridriver
 ```bash
 safaridriver --enable
 ```
-or follow this link: [Apple Doc] (https://developer.apple.com/documentation/webkit/testing_with_webdriver_in_safari)
+or follow this link: [Apple Doc](https://developer.apple.com/documentation/webkit/testing_with_webdriver_in_safari)
 
-##Usage
+## Usage
 Inside the main.py change the movie_name, zip_code, show_type and movie_date to the desired values
