@@ -29,3 +29,5 @@ or follow this link: [Apple Doc](https://developer.apple.com/documentation/webki
 
 ## Usage
 Inside the main.py change the movie_name, zip_code, show_type and movie_date to the desired values
+To use time filter:
+set time_filter = True and set start_time and end_time in this format '6:00p'. Bot will take care of the rest

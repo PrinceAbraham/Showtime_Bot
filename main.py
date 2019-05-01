@@ -8,31 +8,42 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 import time
 
+#Functions
+def getTimeMinutes(text):
+    time = text.rsplit(":")
+    hour = time[0]
+    min = int(time[1].strip("ap"))
+    ap = time[1][2]
+    if ap != 'a':
+      hour = int(hour) + 12
+    totalMin = int(hour) * 60 + min
+    return totalMin
+
 #config
 current_url = "https://www.fandango.com/"
 movie_name = "Avengers Endgame"
 zip_code = "33323"
 show_type = "Standard Showtimes"
-movie_date = "2019-04-25"
+movie_date = "2019-05-01"
 timeout = 20
 temp_theater_name = ""
 temp_movie_time = ""
 movies_links = []
 image_names = []
 
+#To return only specific times
+time_filter = True
+start_time = getTimeMinutes("6:30a")
+end_time = getTimeMinutes("8:00p")
+
+#To track runtime
 start = time.time()
-
-
-# chrome_options = Options()
-#chrome_options.add_argument("--headless")
-# chrome_options.add_argument("--start-maximized")
 
 driver = webdriver.Safari()
 driver.maximize_window()
 driver.get(current_url)
 
 #Search
-
 search_field = driver.find_element_by_css_selector(".fan-input.style-search")
 if search_field.is_displayed():
     search_field.clear()
@@ -114,14 +125,24 @@ for current_page in range(page_count):
 
             image_names.append(temp_theater_name + " - " + temp_movie_time)
 
-            #link
-            try:
-                link = timeslot.find_element_by_css_selector("a.btn.showtime-btn.showtime-btn--available").get_attribute('href')
-            except NoSuchElementException:
-                # print(timeslot.screenshot("timeslot"+str(current_page)+".png"))
-                continue
-
-            movies_links.append(link)
+            #Check if time filter is on
+            if time_filter:
+                if getTimeMinutes(temp_movie_time) >= start_time and getTimeMinutes(temp_movie_time) <= end_time:
+                    #link
+                    try:
+                        link = timeslot.find_element_by_css_selector("a.btn.showtime-btn.showtime-btn--available").get_attribute('href')
+                    except NoSuchElementException:
+                        # print(timeslot.screenshot("timeslot"+str(current_page)+".png"))
+                        continue
+                    movies_links.append(link)
+            else:
+                #link
+                try:
+                    link = timeslot.find_element_by_css_selector("a.btn.showtime-btn.showtime-btn--available").get_attribute('href')
+                except NoSuchElementException:
+                    # print(timeslot.screenshot("timeslot"+str(current_page)+".png"))
+                    continue
+                movies_links.append(link)
     if current_page < page_count:
         #go next
         driver.find_element_by_css_selector("section.pagination :last-child").click()
@@ -151,7 +172,7 @@ for i in range(len(movies_links)):
             #left 200 and less than 390 | top 206 and less than 494
             left = float(seat.value_of_css_property("left")[:-2])
             top = float(seat.value_of_css_property("top")[:-2])
-            if left > 220.0 and left < 370.0 and top > 216.0 and top < 484.0:
+            if left > 240.0 and left < 350.0 and top > 236.0 and top < 464.0:
                 driver.find_element_by_id("map").screenshot(image_names[i] + ".png")
                 break
     except:
