@@ -19,22 +19,42 @@ def getTimeMinutes(text):
     totalMin = int(hour) * 60 + min
     return totalMin
 
+def hasGroupSeats(seats, count):
+    good_seats = []
+    temp_count = 1
+    for seat in seats:
+        good_seats.append(seat.get_attribute("id"))
+    good_seats.sort()
+    for x in good_seats:
+        for y in good_seats:
+            if x[0] == y[0]:
+                if int(y[1:]) == (int(x[1:]) + temp_count):
+                    temp_count = temp_count + 1
+        if temp_count >= count:
+            return True
+        else:
+            temp_count = 1
+    return False
+
 #config
 current_url = "https://www.fandango.com/"
 movie_name = "Avengers Endgame"
-zip_code = "33323"
+zip_code = "33065"
 show_type = "Standard Showtimes"
-movie_date = "2019-05-01"
+movie_date = "2019-05-02"
 timeout = 20
 temp_theater_name = ""
 temp_movie_time = ""
 movies_links = []
 image_names = []
 
+#default group_no = 1
+group_no = 3
+
 #To return only specific times
 time_filter = True
-start_time = getTimeMinutes("6:30a")
-end_time = getTimeMinutes("8:00p")
+start_time = getTimeMinutes("6:30p")
+end_time = getTimeMinutes("10:00p")
 
 #To track runtime
 start = time.time()
@@ -154,12 +174,13 @@ driver = webdriver.Safari()
 driver.maximize_window()
 for i in range(len(movies_links)):
     driver.get(movies_links[i])
+    good_seats = []
 
     try:
         element_present = EC.visibility_of_element_located((By.ID, 'AreaRepeater_TicketRepeater_0_quantityddl_0'))
         WebDriverWait(driver, timeout).until(element_present)
         dropdown = Select(driver.find_element_by_id("AreaRepeater_TicketRepeater_0_quantityddl_0"))
-        dropdown.select_by_value('1')
+        dropdown.select_by_value(str(group_no))
         button = driver.find_element_by_id("NewCustomerCheckoutButton")
         button.click()
 
@@ -168,16 +189,25 @@ for i in range(len(movies_links)):
 
         #Print the image if it has good seats
         avaliable_seats = driver.find_elements_by_css_selector(".standard.availableSeat")
-        for seat in avaliable_seats:
-            #left 200 and less than 390 | top 206 and less than 494
-            left = float(seat.value_of_css_property("left")[:-2])
-            top = float(seat.value_of_css_property("top")[:-2])
-            if left > 240.0 and left < 350.0 and top > 236.0 and top < 464.0:
+        if group_no > 1:
+            for seat in avaliable_seats:
+                #left 200 and less than 390 | top 206 and less than 494
+                left = float(seat.value_of_css_property("left")[:-2])
+                top = float(seat.value_of_css_property("top")[:-2])
+                if left > 160.0 and left < 385.0 and top > 236.0 and top < 464.0:
+                    good_seats.append(seat)
+            if(hasGroupSeats(good_seats, group_no)):
                 driver.find_element_by_id("map").screenshot(image_names[i] + ".png")
-                break
+        else:
+            for seat in avaliable_seats:
+                #left 200 and less than 390 | top 206 and less than 494
+                left = float(seat.value_of_css_property("left")[:-2])
+                top = float(seat.value_of_css_property("top")[:-2])
+                if left > 240.0 and left < 350.0 and top > 236.0 and top < 464.0:
+                    driver.find_element_by_id("map").screenshot(image_names[i] + ".png")
+                    break
     except:
         print("Showtime Full: " + movies_links[i])
-
 driver.close()
 
 end = time.time()
